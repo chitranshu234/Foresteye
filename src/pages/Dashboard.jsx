@@ -36,7 +36,7 @@ function generateDummyHistory() {
 }
 
 const MAX_HISTORY = 20;
-const OFFLINE_TIMEOUT = 60000;
+const OFFLINE_TIMEOUT = 10000;
 
 /* ─────────── Info Cards Config ─────────── */
 const InfoCard = ({ icon: Icon, iconColor, label, value, unit, description }) => (
@@ -126,7 +126,7 @@ export default function Dashboard() {
       if (Date.now() - lastUpdate > OFFLINE_TIMEOUT && useFirebase) {
         setIsOnline(false);
       }
-    }, 10000);
+    }, 2000);
     return () => clearInterval(iv);
   }, [lastUpdate, useFirebase]);
 
@@ -251,11 +251,23 @@ export default function Dashboard() {
                   <div className="mt-2 pt-3 border-t border-gray-100 flex items-center justify-center">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
                       useFirebase
-                        ? "bg-emerald-50 text-emerald-600"
+                        ? isOnline
+                          ? "bg-emerald-50 text-emerald-600"
+                          : "bg-red-50 text-red-600"
                         : "bg-amber-50 text-amber-600"
                     }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${useFirebase ? "bg-emerald-500" : "bg-amber-500"} animate-pulse`} />
-                      {useFirebase ? "Firebase Live" : "Demo Mode"}
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        useFirebase
+                          ? isOnline
+                            ? "bg-emerald-500"
+                            : "bg-red-500"
+                          : "bg-amber-500"
+                      } ${isOnline ? "animate-pulse" : ""}`} />
+                      {useFirebase
+                        ? isOnline
+                          ? "Firebase Live"
+                          : "Sensor Offline"
+                        : "Demo Mode"}
                     </span>
                   </div>
                 </div>
