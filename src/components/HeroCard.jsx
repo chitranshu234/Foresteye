@@ -1,8 +1,39 @@
-import { WiDaySunny, WiCloudy, WiRain, WiHot, WiSnowflakeCold } from "react-icons/wi";
+import { 
+  WiDaySunny, 
+  WiCloudy, 
+  WiRain, 
+  WiHot, 
+  WiSnowflakeCold, 
+  WiNightClear, 
+  WiNightAltCloudy 
+} from "react-icons/wi";
 import { FiMapPin } from "react-icons/fi";
 
-function getCondition(temp, rain) {
+function checkIsNight(timeStr) {
+  if (timeStr) {
+    const match = timeStr.match(/^(\d+):/);
+    if (match) {
+      const hour = parseInt(match[1], 10);
+      const isPM = timeStr.toLowerCase().includes("pm");
+      const isAM = timeStr.toLowerCase().includes("am");
+      let realHour = hour;
+      if (isPM && hour < 12) realHour += 12;
+      if (isAM && hour === 12) realHour = 0;
+      return realHour < 6 || realHour >= 18;
+    }
+  }
+  const hours = new Date().getHours();
+  return hours < 6 || hours >= 18;
+}
+
+function getCondition(temp, rain, isNight) {
   if (rain === 0 || rain === "0") return { text: "Rainy", icon: WiRain };
+  
+  if (isNight) {
+    if (temp > 28) return { text: "Warm Night", icon: WiNightAltCloudy };
+    return { text: "Clear Night", icon: WiNightClear };
+  }
+  
   if (temp > 38) return { text: "Hot", icon: WiHot };
   if (temp > 28) return { text: "Warm & Sunny", icon: WiDaySunny };
   if (temp > 18) return { text: "Mild", icon: WiCloudy };
@@ -11,7 +42,8 @@ function getCondition(temp, rain) {
 }
 
 export default function HeroCard({ temperature, rain, history }) {
-  const condition = getCondition(temperature, rain);
+  const isNight = checkIsNight(history?.time || new Date().toLocaleTimeString());
+  const condition = getCondition(temperature, rain, isNight);
   const CondIcon = condition.icon;
 
   /* Compute high / low from history */
@@ -19,12 +51,20 @@ export default function HeroCard({ temperature, rain, history }) {
   const high = temps.length ? Math.max(...temps).toFixed(1) : temperature;
   const low = temps.length ? Math.min(...temps).toFixed(1) : temperature;
 
+  const roundedTemp = temperature !== null && temperature !== undefined
+    ? Math.round(temperature)
+    : "--";
+
   return (
-    <div className="relative h-full min-h-[260px] rounded-3xl overflow-hidden bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 p-6 flex flex-col justify-between text-white">
-      {/* Decorative cloud shapes */}
-      <div className="absolute top-6 right-10 w-28 h-14 bg-white/15 rounded-full blur-xl pointer-events-none" />
-      <div className="absolute top-20 right-2 w-20 h-10 bg-white/10 rounded-full blur-lg pointer-events-none" />
-      <div className="absolute bottom-16 right-24 w-36 h-18 bg-white/8 rounded-full blur-2xl pointer-events-none" />
+    <div className={`relative h-full min-h-[260px] rounded-3xl overflow-hidden p-6 flex flex-col justify-between text-white transition-all duration-1000 ${
+      isNight 
+        ? "bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#311042]" 
+        : "bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600"
+    }`}>
+      {/* Decorative cloud shapes (hide slightly at night or dim) */}
+      <div className={`absolute top-6 right-10 w-28 h-14 rounded-full blur-xl pointer-events-none transition-opacity duration-1000 ${isNight ? "bg-white/5 opacity-50" : "bg-white/15"}`} />
+      <div className={`absolute top-20 right-2 w-20 h-10 rounded-full blur-lg pointer-events-none transition-opacity duration-1000 ${isNight ? "bg-white/5 opacity-50" : "bg-white/10"}`} />
+      <div className={`absolute bottom-16 right-24 w-36 h-18 rounded-full blur-2xl pointer-events-none transition-opacity duration-1000 ${isNight ? "bg-white/3 opacity-30" : "bg-white/8"}`} />
 
       {/* Landscape wave */}
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
@@ -51,9 +91,7 @@ export default function HeroCard({ temperature, rain, history }) {
       <div className="relative z-10 mt-2">
         <div className="flex items-start gap-1">
           <span className="text-7xl font-extrabold leading-none tracking-tighter">
-            {temperature !== null && temperature !== undefined
-              ? Math.round(temperature)
-              : "--"}
+            {roundedTemp}
           </span>
           <span className="text-3xl font-light mt-1">°C</span>
         </div>
