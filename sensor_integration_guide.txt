@@ -23,19 +23,19 @@ The microcontroller must write data as a single JSON object to the
 this schema:
 
 {
-  "temperature": 34.64,
-  "pressure": 97530.11,
-  "ir": 1,
-  "food_cm": 0,
-  "altitude": 320.85
+  "temperature": 34.4,
+  "pressure": 975,
+  "rain": 1,
+  "food": 8,
+  "altitude": 319
 }
 
 Fields Description:
 * temperature (Float): Ambient temperature value in Celsius (°C).
-* pressure (Float): Atmospheric pressure in Pascals (Pa). *Website automatically converts this to hPa.*
-* ir (Integer): Infrared status (maps to rain status). Send 0 for wet/rain, and 1 for clear/dry.
-* food_cm (Integer): Height in cm representing food level / empty space.
-* altitude (Float): Elevation above sea level in meters.
+* pressure (Integer): Atmospheric pressure in hPa.
+* rain (Integer): Rain status. Send 0 if raining/wet, and 1 if clear.
+* food (Integer): Remaining food percentage (e.g. 8 means 8% remaining).
+* altitude (Integer): Elevation above sea level in meters.
 
 ------------------------------------------------------------------------
 3. ESP8266 IMPLEMENTATION TEMPLATE (ARDUINO C++)
@@ -73,18 +73,18 @@ void setup() {
 
 void loop() {
   // Read sensor values (Replace with actual physical sensor readings)
-  float tempVal = 34.64;     // Read from temperature sensor
-  float pressVal = 97530.11; // Read from barometric sensor in Pascals
-  int irVal = 1;             // Read from infrared obstacle/rain sensor (0 = wet, 1 = dry)
-  int foodCmVal = 0;         // Read from ultrasonic sensor (distance to food in cm)
-  float altVal = 320.85;     // Read from altitude calculation
+  float tempVal = 34.4;      // Read from temperature sensor
+  float pressVal = 975;      // Read from barometric sensor in hPa
+  int rainVal = 1;           // Read from rain sensor (0 = wet, 1 = dry)
+  int foodVal = 8;           // Read from ultrasonic sensor (remaining food percentage)
+  float altVal = 319;        // Read from altitude calculation
 
   // Load readings into JSON payload structure
   json.clear();
   json.add("temperature", tempVal);
   json.add("pressure", pressVal);
-  json.add("ir", irVal);
-  json.add("food_cm", foodCmVal);
+  json.add("rain", rainVal);
+  json.add("food", foodVal);
   json.add("altitude", altVal);
 
   // Push to Firebase Realtime Database
