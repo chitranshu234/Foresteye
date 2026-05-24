@@ -1,0 +1,101 @@
+========================================================================
+TECHNICAL HANDOVER NOTE: FORESTEYE SENSOR INTEGRATION GUIDE
+========================================================================
+
+This document outlines the database credentials, schema specifications, 
+and microcontroller configuration required to connect the hardware sensors 
+to the ForestEye Live Dashboard.
+
+------------------------------------------------------------------------
+1. DATABASE CREDENTIALS
+------------------------------------------------------------------------
+Use the following parameters to authenticate the connection:
+
+* Firebase Host URL:          https://iot-project-29231-default-rtdb.firebaseio.com
+* Database Secret/Auth Key:   AIzaSyANqn5SNvO9ZGuUzuT15aDqh3tc6qH8Mn4
+* Database Target Path:       /sensorData
+
+------------------------------------------------------------------------
+2. JSON DATA SCHEMA
+------------------------------------------------------------------------
+The microcontroller must write data as a single JSON object to the 
+'/sensorData' key. The parameters are case-sensitive and must match 
+this schema:
+
+{
+  "temperature": 24.5,
+  "pressure": 1013,
+  "rain": 1,
+  "food": 35,
+  "altitude": 340
+}
+
+Fields Description:
+* temperature (Float): Ambient temperature value in Celsius (°C).
+* pressure (Integer): Atmospheric pressure in hPa.
+* rain (Integer): Rain status. Send 0 if raining/wet, and 1 if clear.
+* food (Integer): Percentage of empty container height (e.g. 35 means 
+  35% empty / 65% remaining). Values above 90 trigger a "Food Empty" 
+  alert on the website.
+* altitude (Integer): Elevation above sea level in meters.
+
+------------------------------------------------------------------------
+3. ESP8266 IMPLEMENTATION TEMPLATE (ARDUINO C++)
+------------------------------------------------------------------------
+To send this data using an ESP8266 and the 'FirebaseESP8266' library 
+by Mobizt:
+
+#include <ESP8266WiFi.h>
+#include <FirebaseESP8266.h>
+
+#define WIFI_SSID "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+
+#define FIREBASE_HOST "iot-project-29231-default-rtdb.firebaseio.com"
+#define FIREBASE_AUTH "AIzaSyANqn5SNvO9ZGuUzuT15aDqh3tc6qH8Mn4"
+
+FirebaseData firebaseData;
+FirebaseJson json;
+
+void setup() {
+  Serial.begin(115200);
+
+  // WiFi Connection
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi Connected.");
+
+  // Firebase Init
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Firebase.reconnectWiFi(true);
+}
+
+void loop() {
+  // Read sensor values (Replace with actual physical sensor readings)
+  float tempVal = 24.5;   // Read from temperature sensor
+  int pressVal = 1013;    // Read from barometric sensor
+  int rainVal = 1;        // Read from rain sensor (0 = wet, 1 = dry)
+  int foodVal = 35;       // Read from ultrasonic sensor (container empty %)
+  int altVal = 340;       // Read from altitude calculation
+
+  // Load readings into JSON payload structure
+  json.clear();
+  json.add("temperature", tempVal);
+  json.add("pressure", pressVal);
+  json.add("rain", rainVal);
+  json.add("food", foodVal);
+  json.add("altitude", altVal);
+
+  // Push to Firebase Realtime Database
+  if (Firebase.setJSON(firebaseData, "/sensorData", json)) {
+    Serial.println("Data pushed successfully.");
+  } else {
+    Serial.print("Failed to push data: ");
+    Serial.println(firebaseData.errorReason());
+  }
+
+  delay(5000); // Send data updates every 5 seconds
+}
