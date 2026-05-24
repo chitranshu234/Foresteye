@@ -85,12 +85,21 @@ export default function Dashboard() {
   useEffect(() => {
     let unsubscribe;
     try {
-      const sensorRef = ref(database, "sensorData");
+      const sensorRef = ref(database, "readings/latest");
       unsubscribe = onValue(
         sensorRef,
         (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
+          const rawData = snapshot.val();
+          if (rawData) {
+            // Map the database keys to match frontend variables
+            const data = {
+              temperature: rawData.temperature !== undefined ? parseFloat(rawData.temperature) : 0,
+              pressure: rawData.pressure !== undefined ? Math.round(parseFloat(rawData.pressure) / 100) : 0, // convert Pa to hPa
+              rain: rawData.ir !== undefined ? parseInt(rawData.ir) : 1, // map 'ir' to 'rain'
+              food: rawData.food_cm !== undefined ? parseInt(rawData.food_cm) : 0, // map 'food_cm' to 'food'
+              altitude: rawData.altitude !== undefined ? Math.round(parseFloat(rawData.altitude)) : 0,
+              time: rawData.time || new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+            };
             setUseFirebase(true);
             setSensorData(data);
             setLastUpdate(Date.now());
