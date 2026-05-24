@@ -66,7 +66,7 @@ export default function Dashboard() {
   const computeAlerts = useCallback((data) => {
     const a = [];
     if (data.rain === 0 || data.rain === "0") a.push({ type: "rain" });
-    if (data.food > 90) a.push({ type: "foodEmpty" });
+    if (data.food < 10) a.push({ type: "foodEmpty" });
     if (data.temperature > 85) a.push({ type: "sensorError" });
     return a;
   }, []);
@@ -245,7 +245,7 @@ export default function Dashboard() {
                   <StatusItem label="Temperature" value={`${sensorData.temperature}°C`} ok />
                   <StatusItem label="Pressure" value={`${sensorData.pressure} hPa`} ok />
                   <StatusItem label="Rain" value={rainText} ok={sensorData.rain !== 0 && sensorData.rain !== "0"} />
-                  <StatusItem label="Food" value={`${Math.max(0, 100 - sensorData.food)}%`} ok={sensorData.food <= 70} />
+                  <StatusItem label="Food" value={`${sensorData.food}%`} ok={sensorData.food >= 30} />
 
                   {/* Footer badge */}
                   <div className="mt-2 pt-3 border-t border-gray-100 flex items-center justify-center">

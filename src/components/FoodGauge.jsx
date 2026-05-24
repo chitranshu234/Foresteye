@@ -1,6 +1,6 @@
 export default function FoodGauge({ level }) {
   const percentage = level !== null && level !== undefined ? level : 0;
-  const remaining = Math.max(0, 100 - percentage);
+  const remaining = percentage;
 
   /* Gauge arc calculation */
   const radius = 52;
@@ -79,7 +79,7 @@ export default function FoodGauge({ level }) {
           </span>
         </div>
         <p className="text-[10px] text-gray-400 mt-2 font-mono">
-          Raw sensor: {percentage}
+          Raw sensor: {percentage}%
         </p>
       </div>
     </div>
