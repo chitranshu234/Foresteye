@@ -11,8 +11,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
-
+import { Bar, Line } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -26,53 +25,97 @@ ChartJS.register(
   Filler
 );
 
-const chartConfigs = {
-  temperature: {
-    title: "Temperature History",
-    color: "#3b82f6",
-    hoverColor: "#2563eb",
-    legendItems: [
-      { label: "Normal", color: "#93c5fd" },
-      { label: "Average", color: "#3b82f6" },
-      { label: "High", color: "#1d4ed8" },
-    ],
-  },
-  pressure: {
-    title: "Pressure Trend",
-    color: "#06b6d4",
-    hoverColor: "#0891b2",
-    legendItems: [
-      { label: "Low", color: "#a5f3fc" },
-      { label: "Normal", color: "#06b6d4" },
-      { label: "High", color: "#0e7490" },
-    ],
-  },
-  food: {
-    title: "Food Level Log",
-    color: "#f59e0b",
-    hoverColor: "#d97706",
-    legendItems: [
-      { label: "OK", color: "#fde68a" },
-      { label: "Low", color: "#f59e0b" },
-      { label: "Critical", color: "#b45309" },
-    ],
-  },
-};
-
-function ChartCard({ type, history }) {
+/* ─── Food Consumption Trend (Line Chart) ─── */
+function FoodTrendChart({ history }) {
   const chartRef = useRef(null);
-  const config = chartConfigs[type];
-  if (!config) return null;
+  const entries = history.slice(-12);
+  const labels = entries.map((e) => e.time?.split(" ")[0] || "");
+  const values = entries.map((e) => e.value);
 
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Food Level %",
+        data: values,
+        borderColor: "#16a34a",
+        backgroundColor: "rgba(22, 163, 74, 0.1)",
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: "#16a34a",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: "#fff",
+        titleColor: "#15803d",
+        bodyColor: "#166534",
+        borderColor: "#bbf7d0",
+        borderWidth: 1,
+        cornerRadius: 10,
+        padding: 10,
+        displayColors: false,
+        titleFont: { size: 12, weight: "600", family: "Inter" },
+        bodyFont: { size: 11, family: "Inter" },
+        callbacks: {
+          label: (ctx) => `Food Level: ${ctx.parsed.y}%`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6ee7b7", font: { size: 9, family: "Inter" }, maxRotation: 0 },
+        border: { display: false },
+      },
+      y: {
+        min: 0,
+        max: 100,
+        grid: { color: "#d1fae5" },
+        ticks: { color: "#6ee7b7", font: { size: 9, family: "Inter" }, padding: 6, callback: (v) => v + "%" },
+        border: { display: false },
+      },
+    },
+  };
+
+  return (
+    <div className="bg-white/75 backdrop-blur-md rounded-3xl p-5 border border-green-100 shadow-sm">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-bold text-green-900">Food Consumption Trend</h3>
+      </div>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-green-500" />
+          <span className="text-[10px] text-emerald-500">Food Level Over Time</span>
+        </div>
+      </div>
+      <div className="h-[180px]">
+        <Line ref={chartRef} data={data} options={options} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Environmental Trends (Bar Chart) ─── */
+function EnvironmentChart({ history }) {
+  const chartRef = useRef(null);
   const entries = history.slice(-10);
   const labels = entries.map((e) => e.time?.split(" ")[0] || "");
   const values = entries.map((e) => e.value);
 
-  /* Color each bar individually for visual variety */
-  const barColors = values.map((v, i) => {
-    const t = i / Math.max(values.length - 1, 1);
-    return i === values.length - 1 ? config.hoverColor : config.color;
-  });
+  const barColors = values.map((v, i) =>
+    i === values.length - 1 ? "#22c55e" : "#16a34a"
+  );
 
   const data = {
     labels,
@@ -92,58 +135,49 @@ function ChartCard({ type, history }) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: { mode: "index", intersect: false },
     plugins: {
       legend: { display: false },
       tooltip: {
         backgroundColor: "#fff",
-        titleColor: "#333",
-        bodyColor: "#666",
-        borderColor: "#e5e7eb",
+        titleColor: "#15803d",
+        bodyColor: "#166534",
+        borderColor: "#bbf7d0",
         borderWidth: 1,
         cornerRadius: 10,
         padding: 10,
         displayColors: false,
         titleFont: { size: 12, weight: "600", family: "Inter" },
         bodyFont: { size: 11, family: "Inter" },
+        callbacks: {
+          label: (ctx) => `Temperature: ${ctx.parsed.y}°C`,
+        },
       },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: "#aaa", font: { size: 9, family: "Inter" }, maxRotation: 0 },
+        ticks: { color: "#6ee7b7", font: { size: 9, family: "Inter" }, maxRotation: 0 },
         border: { display: false },
       },
       y: {
-        grid: { color: "#f3f4f6" },
-        ticks: { color: "#aaa", font: { size: 9, family: "Inter" }, padding: 6 },
+        grid: { color: "#d1fae5" },
+        ticks: { color: "#6ee7b7", font: { size: 9, family: "Inter" }, padding: 6 },
         border: { display: false },
       },
     },
   };
 
   return (
-    <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
-      {/* Header */}
+    <div className="bg-white/75 backdrop-blur-md rounded-3xl p-5 border border-green-100 shadow-sm">
       <div className="flex items-center justify-between mb-1">
-        <h3 className="text-sm font-bold text-gray-800">{config.title}</h3>
-
+        <h3 className="text-sm font-bold text-green-900">Temperature History</h3>
       </div>
-
-      {/* Legend dots */}
       <div className="flex items-center gap-3 mb-4">
-        {config.legendItems.map((item) => (
-          <div key={item.label} className="flex items-center gap-1">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="text-[10px] text-gray-400">{item.label}</span>
-          </div>
-        ))}
+        <div className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-green-500" />
+          <span className="text-[10px] text-emerald-500">Ambient Temperature</span>
+        </div>
       </div>
-
-      {/* Chart */}
       <div className="h-[180px]">
         <Bar ref={chartRef} data={data} options={options} />
       </div>
@@ -151,12 +185,93 @@ function ChartCard({ type, history }) {
   );
 }
 
+/* ─── Visit Activity Chart (Bar) ─── */
+function VisitChart({ history }) {
+  const chartRef = useRef(null);
+  const entries = history.slice(-12);
+  const labels = entries.map((e) => e.time?.split(" ")[0] || "");
+  const values = entries.map((e) => e.value);
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        data: values,
+        backgroundColor: values.map((v) => (v > 0 ? "#10b981cc" : "#d1fae5cc")),
+        hoverBackgroundColor: values.map((v) => (v > 0 ? "#059669" : "#a7f3d0")),
+        borderRadius: 6,
+        borderSkipped: false,
+        barPercentage: 0.5,
+        categoryPercentage: 0.7,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: "#fff",
+        titleColor: "#15803d",
+        bodyColor: "#166534",
+        borderColor: "#bbf7d0",
+        borderWidth: 1,
+        cornerRadius: 10,
+        padding: 10,
+        displayColors: false,
+        titleFont: { size: 12, weight: "600", family: "Inter" },
+        bodyFont: { size: 11, family: "Inter" },
+        callbacks: {
+          label: (ctx) => `Visits: ${ctx.parsed.y}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: "#6ee7b7", font: { size: 9, family: "Inter" }, maxRotation: 0 },
+        border: { display: false },
+      },
+      y: {
+        grid: { color: "#d1fae5" },
+        ticks: {
+          color: "#6ee7b7",
+          font: { size: 9, family: "Inter" },
+          padding: 6,
+          stepSize: 1,
+        },
+        border: { display: false },
+      },
+    },
+  };
+
+  return (
+    <div className="bg-white/75 backdrop-blur-md rounded-3xl p-5 border border-green-100 shadow-sm">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-bold text-green-900">Visit Activity</h3>
+      </div>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span className="text-[10px] text-emerald-500">Cattle visits per interval</span>
+        </div>
+      </div>
+      <div className="h-[180px]">
+        <Bar ref={chartRef} data={data} options={options} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Charts Layout ─── */
 export default function Charts({ history }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-      <ChartCard type="temperature" history={history.temperature || []} />
-      <ChartCard type="pressure" history={history.pressure || []} />
-      <ChartCard type="food" history={history.food || []} />
+      <FoodTrendChart history={history.food_level || []} />
+      <EnvironmentChart history={history.temperature || []} />
+      <VisitChart history={history.visitLog || []} />
     </div>
   );
 }

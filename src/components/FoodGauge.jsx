@@ -9,26 +9,23 @@ export default function FoodGauge({ level }) {
 
   /* Color based on remaining level */
   let gaugeColor = "#22c55e"; /* green */
-  let bgTint = "bg-emerald-50";
+  let bgTint = "bg-emerald-50 text-emerald-600";
   let statusText = "Adequate";
-  let statusColor = "text-emerald-600";
   if (remaining <= 10) {
     gaugeColor = "#ef4444";
-    bgTint = "bg-red-50";
+    bgTint = "bg-red-50 text-red-600";
     statusText = "Critical!";
-    statusColor = "text-red-600";
   } else if (remaining <= 30) {
     gaugeColor = "#f59e0b";
-    bgTint = "bg-amber-50";
+    bgTint = "bg-amber-50 text-amber-600";
     statusText = "Running Low";
-    statusColor = "text-amber-600";
   }
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm h-full flex flex-col">
+    <div className="bg-white/75 backdrop-blur-md rounded-3xl p-6 border border-green-100 shadow-sm h-full flex flex-col">
       {/* Header */}
-      <h3 className="text-base font-bold text-gray-800 mb-1">Food Level</h3>
-      <p className="text-xs text-gray-400 mb-4">Container monitoring</p>
+      <h3 className="text-base font-bold text-green-900 mb-1">Food Level</h3>
+      <p className="text-xs text-emerald-500 mb-4">Container monitoring</p>
 
       {/* Gauge */}
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -43,7 +40,7 @@ export default function FoodGauge({ level }) {
               cy="60"
               r={radius}
               fill="none"
-              stroke="#f3f4f6"
+              stroke="#d1fae5"
               strokeWidth="12"
             />
             {/* Progress arc */}
@@ -62,11 +59,11 @@ export default function FoodGauge({ level }) {
           </svg>
           {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-extrabold text-gray-800">
+            <span className="text-3xl font-extrabold text-green-900">
               {remaining}
-              <span className="text-sm font-semibold text-gray-400">%</span>
+              <span className="text-sm font-semibold text-green-400">%</span>
             </span>
-            <span className="text-[10px] text-gray-400 font-medium">
+            <span className="text-[10px] text-emerald-400 font-medium">
               remaining
             </span>
           </div>
@@ -74,11 +71,11 @@ export default function FoodGauge({ level }) {
 
         {/* Status */}
         <div className="flex items-center gap-1.5 mt-4">
-          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${bgTint} ${statusColor}`}>
+          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${bgTint}`}>
             {statusText}
           </span>
         </div>
-        <p className="text-[10px] text-gray-400 mt-2 font-mono">
+        <p className="text-[10px] text-emerald-400 mt-2 font-mono">
           Raw sensor: {percentage}%
         </p>
       </div>

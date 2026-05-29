@@ -1,10 +1,10 @@
 ========================================================================
-TECHNICAL HANDOVER NOTE: FORESTEYE SENSOR INTEGRATION GUIDE
+TECHNICAL HANDOVER NOTE: HERDWATCH SENSOR INTEGRATION GUIDE
 ========================================================================
 
 This document outlines the database credentials, schema specifications, 
 and microcontroller configuration required to connect the hardware sensors 
-to the ForestEye Live Dashboard.
+to the HerdWatch Live Livestock Monitoring Dashboard.
 
 ------------------------------------------------------------------------
 1. DATABASE CREDENTIALS
@@ -23,19 +23,29 @@ The microcontroller must write data as a single JSON object to the
 this schema:
 
 {
-  "temperature": 34.4,
-  "pressure": 975,
-  "rain": 1,
-  "food": 8,
-  "altitude": 319
+  "temperature": 34.5,
+  "pressure": 977,
+  "altitude": 305,
+  "food_level": 35,
+  "cattle_present": 1,
+  "health_status": "Normal",
+  "visit_count": 7,
+  "feeding_duration": 720,
+  "object_distance": 45.2,
+  "timestamp": "2026-05-30 02:15:00"
 }
 
 Fields Description:
 * temperature (Float): Ambient temperature value in Celsius (°C).
 * pressure (Integer): Atmospheric pressure in hPa.
-* rain (Integer): Rain status. Send 0 if raining/wet, and 1 if clear.
-* food (Integer): Remaining food percentage (e.g. 8 means 8% remaining).
 * altitude (Integer): Elevation above sea level in meters.
+* food_level (Integer): Remaining food percentage (e.g. 35 means 35% remaining).
+* cattle_present (Integer): 1 if cattle are present at the station, 0 if absent.
+* health_status (String): Health diagnostic status ("Normal", "Warning", "Critical").
+* visit_count (Integer): Cumulative count of cattle visits today.
+* feeding_duration (Integer): Total cumulative feeding duration in seconds.
+* object_distance (Float): Measured distance to object/cattle in centimeters (cm).
+* timestamp (String): Formatted date and time string of the sensor reading.
 
 ------------------------------------------------------------------------
 3. ESP8266 IMPLEMENTATION TEMPLATE (ARDUINO C++)
@@ -73,19 +83,29 @@ void setup() {
 
 void loop() {
   // Read sensor values (Replace with actual physical sensor readings)
-  float tempVal = 34.4;      // Read from temperature sensor
-  float pressVal = 975;      // Read from barometric sensor in hPa
-  int rainVal = 1;           // Read from rain sensor (0 = wet, 1 = dry)
-  int foodVal = 8;           // Read from ultrasonic sensor (remaining food percentage)
-  float altVal = 319;        // Read from altitude calculation
+  float tempVal = 34.5;               // Read from temperature sensor
+  float pressVal = 977;               // Read from barometric sensor in hPa
+  float altVal = 305;                 // Read from altitude calculation
+  int foodLevelVal = 35;              // Read from ultrasonic sensor (remaining food percentage)
+  int cattlePresentVal = 1;           // PIR/ultrasonic detection (1 = Present, 0 = Absent)
+  String healthStatusVal = "Normal";  // Computed health status from sensors
+  int visitCountVal = 7;              // Total visits tracked by the microcontroller
+  int feedingDurationVal = 720;       // Cumulative feeding time in seconds
+  float objDistanceVal = 45.2;        // Ultrasonic distance measurement in cm
+  String timestampVal = "2026-05-30 02:15:00"; // Formatted timestamp
 
   // Load readings into JSON payload structure
   json.clear();
   json.add("temperature", tempVal);
   json.add("pressure", pressVal);
-  json.add("rain", rainVal);
-  json.add("food", foodVal);
   json.add("altitude", altVal);
+  json.add("food_level", foodLevelVal);
+  json.add("cattle_present", cattlePresentVal);
+  json.add("health_status", healthStatusVal);
+  json.add("visit_count", visitCountVal);
+  json.add("feeding_duration", feedingDurationVal);
+  json.add("object_distance", objDistanceVal);
+  json.add("timestamp", timestampVal);
 
   // Push to Firebase Realtime Database
   if (Firebase.setJSON(firebaseData, "/readings/latest", json)) {
