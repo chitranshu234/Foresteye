@@ -76,7 +76,7 @@ export default function Dashboard() {
               pressure:         raw.pressure !== undefined ? Math.round(parseFloat(raw.pressure)) : 0,
               altitude:         raw.altitude !== undefined ? Math.round(parseFloat(raw.altitude)) : 0,
               // Cattle
-              food_level:       raw.food_level !== undefined ? parseInt(raw.food_level) : 0,
+              food_level:       raw.food !== undefined ? parseInt(raw.food) : 0,
               cattle_present:   raw.cattle_present !== undefined ? parseInt(raw.cattle_present) : 0,
               health_status:    raw.health_status !== undefined ? String(raw.health_status) : "Unknown",
               // System / Tracking
